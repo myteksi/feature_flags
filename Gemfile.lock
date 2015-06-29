@@ -1,0 +1,48 @@
+PATH
+  remote: .
+  specs:
+    feature_flags (1.0.0)
+      redis
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bourne (1.0)
+      mocha (= 0.9.8)
+    diff-lcs (1.2.5)
+    fakeredis (0.5.0)
+      redis (~> 3.0)
+    git (1.2.9.1)
+    jeweler (1.6.4)
+      bundler (~> 1.0)
+      git (>= 1.2.5)
+      rake
+    mocha (0.9.8)
+      rake
+    rake (10.4.2)
+    redis (3.2.1)
+    rspec (3.3.0)
+      rspec-core (~> 3.3.0)
+      rspec-expectations (~> 3.3.0)
+      rspec-mocks (~> 3.3.0)
+    rspec-core (3.3.1)
+      rspec-support (~> 3.3.0)
+    rspec-expectations (3.3.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-mocks (3.3.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-support (3.3.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bourne (= 1.0)
+  bundler (>= 1.0.0)
+  fakeredis
+  feature_flags!
+  jeweler (~> 1.6.4)
+  mocha (= 0.9.8)
+  rspec (= 3.3.0)
