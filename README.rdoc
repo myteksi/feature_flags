@@ -4,30 +4,30 @@ Conditionally roll out features with redis.
 
 == Install it
 
-  gem install rollout
+  gem install feature_flags
 
 == How it works
 
-Initialize a rollout object. I assign it to a global var.
+Initialize a feature_flags object. I assign it to a global var.
 
   $redis   = Redis.new
-  $rollout = Rollout.new($redis)
+  $feature_flags = FeatureFlags.new($redis)
 
 == City Flags ==
 
   A city can have a feature in two states. Beta / Live.
   To make a feature live for a city
 
-  $rollout.activate_city(feature: :<feature>, city_id: <city_id>, live: true)
+  $feature_flags.activate_city(feature: :<feature>, city_id: <city_id>, live: true)
 
   To make a feature beta for a city
-  $rollout.activate_city(feature: :<feature>, city_id: <city_id>, live: false)
+  $feature_flags.activate_city(feature: :<feature>, city_id: <city_id>, live: false)
 
   To deactivate a city (make a feature non-existent for that city)
-  $rollout.deactivate_city(feature: :<feature>, city_id: <city_id>)
+  $feature_flags.deactivate_city(feature: :<feature>, city_id: <city_id>)
 
   You can obtain a list of features with their states for a city as follows
-  $rollout.city_features(city_id: <city_id>, feature_list: [:cashless, :beta_user, :non_existent_feature])
+  $feature_flags.city_features(city_id: <city_id>, feature_list: [:cashless, :beta_user, :non_existent_feature])
   returns a hash { cashless: 'live', beta_user: 'beta', non_existent_feature: nil }
 
 == User Flags ==
@@ -42,16 +42,16 @@ Initialize a rollout object. I assign it to a global var.
      Non-Existent      Always No       No          No
 
   To activate a feature for the user
-  $rollout.activate_user(feature: :<feature>, city_id: <city_id>, id: <user_id>)
+  $feature_flags.activate_user(feature: :<feature>, city_id: <city_id>, id: <user_id>)
 
   To deactivate a feature for the user
-  $rollout.deactivate_user(feature: :<feature>, city_id: <city_id>, id: <user_id>)
+  $feature_flags.deactivate_user(feature: :<feature>, city_id: <city_id>, id: <user_id>)
 
   To check whether a user is active for a feature, returns true / false
-  $rollout.user_active?(feature: :<feature>, city_id: <city_id>, id: <user_id>)
+  $feature_flags.user_active?(feature: :<feature>, city_id: <city_id>, id: <user_id>)
 
   You can obtain a list of features for a user as follows
-  $rollout.user_features(id: <user_id>, city_id: <city_id>, feature_list: [:cashless, :beta_user, :non_existent_feature])
+  $feature_flags.user_features(id: <user_id>, city_id: <city_id>, feature_list: [:cashless, :beta_user, :non_existent_feature])
   returns a hash { cashless: true, beta_user: false, non_existent_feature: false }
 
 == Copyright
