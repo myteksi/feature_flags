@@ -27,7 +27,7 @@ Initialize a feature_flags object. I assign it to a global var.
   $feature_flags.deactivate_city(feature: :<feature>, city_id: <city_id>)
 
   You can obtain a list of features with their states for a city as follows
-  $feature_flags.city_features(city_id: <city_id>, features: [:cashless, :betauser, :non_existent_feature])
+  $feature_flags.city_features(city_id: <city_id>, feature_list: [:cashless, :betauser, :non_existent_feature])
   returns a hash { cashless: 'live', betauser: 'beta', non_existent_feature: nil }
 
 == User Flags ==
@@ -51,7 +51,7 @@ Initialize a feature_flags object. I assign it to a global var.
   $feature_flags.user_active?(feature: :<feature>, city_id: <city_id>, id: <user_id>)
 
   You can obtain a list of features for a user as follows
-  $feature_flags.user_features(id: <user_id>, city_id: <city_id>, features: [:cashless, :betauser, :non_existent_feature])
+  $feature_flags.user_features(id: <user_id>, city_id: <city_id>, feature_list: [:cashless, :betauser, :non_existent_feature])
   returns a hash { cashless: true, betauser: false, non_existent_feature: false }
 
 == Copyright
