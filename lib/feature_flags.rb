@@ -1,6 +1,8 @@
 class FeatureFlags
-  def initialize(redis)
-    @redis  = redis
+  def initialize(redis, namespace, group_size)
+    @redis = redis
+    @namespace = namespace
+    @group_size = group_size
   end
 
   # cashless_live: [1, 2, 3] # cashless_beta: [4, 5, 6]
@@ -93,18 +95,18 @@ class FeatureFlags
   end
 
   def live_features_key(feature)
-    "city_#{feature}_live"
+    "#{@namespace}_city_#{feature}_live"
   end
 
   def beta_features_key(feature)
-    "city_#{feature}_beta"
+    "#{@namespace}_city_#{feature}_beta"
   end
 
   def blacklist_user_key(feature, id)
-    "user_#{feature}_blacklist_#{id / 100_000}"
+    "#{@namespace}_user_#{feature}_blacklist_#{id / @group_size}"
   end
 
   def whitelist_user_key(feature)
-    "user_#{feature}_whitelist"
+    "#{@namespace}_user_#{feature}_whitelist"
   end
 end
