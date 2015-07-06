@@ -1,6 +1,8 @@
 class FeatureFlags
-  def initialize(redis)
-    @redis  = redis
+  def initialize(redis, namespace, group_size = 100_000)
+    @redis = redis
+    @namespace = namespace
+    @group_size = group_size
   end
 
   # cashless_live: [1, 2, 3] # cashless_beta: [4, 5, 6]
@@ -42,7 +44,7 @@ class FeatureFlags
 
   def activate_user(feature:, city_id:, id:)
     if city_live?(feature: feature, city_id: city_id)
-      @redis.srem(blacklist_user_key(feature), id)
+      @redis.srem(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.sadd(whitelist_user_key(feature), id)
     end
@@ -50,7 +52,7 @@ class FeatureFlags
 
   def deactivate_user(feature:, city_id:, id:)
     if city_live?(feature: feature, city_id: city_id)
-      @redis.sadd(blacklist_user_key(feature), id)
+      @redis.sadd(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.srem(whitelist_user_key(feature), id)
     end
@@ -60,7 +62,7 @@ class FeatureFlags
     return false if feature.nil? || city_id.nil? || id.nil?
 
     if city_live?(feature: feature, city_id: city_id)
-      !@redis.sismember(blacklist_user_key(feature), id)
+      !@redis.sismember(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.sismember(whitelist_user_key(feature), id)
     else
@@ -93,18 +95,18 @@ class FeatureFlags
   end
 
   def live_features_key(feature)
-    "city_#{feature}_live"
+    "#{@namespace}_city_#{feature}_live"
   end
 
   def beta_features_key(feature)
-    "city_#{feature}_beta"
+    "#{@namespace}_city_#{feature}_beta"
   end
 
-  def blacklist_user_key(feature)
-    "user_#{feature}_blacklist"
+  def blacklist_user_key(feature, id)
+    "#{@namespace}_user_#{feature}_blacklist_#{id / @group_size}"
   end
 
   def whitelist_user_key(feature)
-    "user_#{feature}_whitelist"
+    "#{@namespace}_user_#{feature}_whitelist"
   end
 end
