@@ -10,8 +10,10 @@ Conditionally roll out features with redis.
 
 Initialize a feature_flags object. I assign it to a global var.
 
+  # Usage: FeatureFlags.new(redis, namespace, group_size)
+
   $redis   = Redis.new
-  $feature_flags = FeatureFlags.new($redis)
+  $feature_flags = FeatureFlags.new($redis, 'namespace', 100_000)
 
 == City Flags ==
 

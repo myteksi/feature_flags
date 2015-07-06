@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "FeatureFlags" do
   before do
     @redis   = Redis.new
-    @feature_flags = FeatureFlags.new(@redis, 'test', 100_000)
+    @feature_flags = FeatureFlags.new(@redis, 'test') # Default group_size 100_000
   end
 
   describe '#activate_city' do

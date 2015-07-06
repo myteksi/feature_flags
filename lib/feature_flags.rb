@@ -1,5 +1,5 @@
 class FeatureFlags
-  def initialize(redis, namespace, group_size)
+  def initialize(redis, namespace, group_size = 100_000)
     @redis = redis
     @namespace = namespace
     @group_size = group_size
