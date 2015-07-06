@@ -42,7 +42,7 @@ class FeatureFlags
 
   def activate_user(feature:, city_id:, id:)
     if city_live?(feature: feature, city_id: city_id)
-      @redis.srem(blacklist_user_key(feature), id)
+      @redis.srem(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.sadd(whitelist_user_key(feature), id)
     end
@@ -50,7 +50,7 @@ class FeatureFlags
 
   def deactivate_user(feature:, city_id:, id:)
     if city_live?(feature: feature, city_id: city_id)
-      @redis.sadd(blacklist_user_key(feature), id)
+      @redis.sadd(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.srem(whitelist_user_key(feature), id)
     end
@@ -60,7 +60,7 @@ class FeatureFlags
     return false if feature.nil? || city_id.nil? || id.nil?
 
     if city_live?(feature: feature, city_id: city_id)
-      !@redis.sismember(blacklist_user_key(feature), id)
+      !@redis.sismember(blacklist_user_key(feature, id), id)
     elsif city_beta?(feature: feature, city_id: city_id)
       @redis.sismember(whitelist_user_key(feature), id)
     else
@@ -100,8 +100,8 @@ class FeatureFlags
     "city_#{feature}_beta"
   end
 
-  def blacklist_user_key(feature)
-    "user_#{feature}_blacklist"
+  def blacklist_user_key(feature, id)
+    "user_#{feature}_blacklist_#{id / 1000}"
   end
 
   def whitelist_user_key(feature)
