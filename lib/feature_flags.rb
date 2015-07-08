@@ -26,7 +26,7 @@ class FeatureFlags
     @redis.srem(beta_features_key(feature), city_id)
   end
 
-  def city_active?(feature:, city_id:)
+  def city_state(feature:, city_id:)
     return false if feature.nil? || city_id.nil?
 
     if city_live?(feature: feature, city_id: city_id)
