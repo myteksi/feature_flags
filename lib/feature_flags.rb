@@ -26,6 +26,18 @@ class FeatureFlags
     @redis.srem(beta_features_key(feature), city_id)
   end
 
+  def city_active?(feature:, city_id:)
+    return false if feature.nil? || city_id.nil?
+
+    if city_live?(feature: feature, city_id: city_id)
+      'live'
+    elsif city_beta?(feature: feature, city_id: city_id)
+      'beta'
+    else
+      false
+    end
+  end
+
   # Returns a hash as follows { cashless: 'live', beta: nil, something: 'beta' }
   def city_features(city_id: , feature_list: [])
     features = {}

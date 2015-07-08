@@ -41,6 +41,32 @@ describe "FeatureFlags" do
     end
   end
 
+  describe '#user_active?' do
+    it 'returns false when feature is nil' do
+      expect(@feature_flags.city_active?(feature: nil, city_id: 1)).to be false
+    end
+
+    it 'returns false when city_id is nil' do
+      expect(@feature_flags.city_active?(feature: :cashless, city_id: nil)).to be false
+    end
+
+    it 'returns false for a feature that does not exist' do
+      expect(@feature_flags.city_active?(feature: :not_exist, city_id: 1)).to be false
+    end
+
+    it 'returns "live" when feature is live in that city' do
+      @feature_flags.activate_city(feature: :cashless, city_id: 1, live: true)
+
+      expect(@feature_flags.city_active?(feature: :cashless, city_id: 1)).to eq('live')
+    end
+
+    it 'returns "beta" when feature is in beta in that city' do
+      @feature_flags.activate_city(feature: :cashless, city_id: 1, live: false)
+
+      expect(@feature_flags.city_active?(feature: :cashless, city_id: 1)).to eq('beta')
+    end
+  end
+
   describe '#city_features' do
     it 'returns an empty hash if no feature list is provided' do
       expect(@feature_flags.city_features(city_id: 1)).to eq({})
