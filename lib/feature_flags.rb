@@ -27,14 +27,14 @@ class FeatureFlags
   end
 
   def city_state(feature:, city_id:)
-    return false if feature.nil? || city_id.nil?
+    return nil if feature.nil? || city_id.nil?
 
     if city_live?(feature: feature, city_id: city_id)
       'live'
     elsif city_beta?(feature: feature, city_id: city_id)
       'beta'
     else
-      false
+      'inactive'
     end
   end
 

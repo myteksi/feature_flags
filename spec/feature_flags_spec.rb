@@ -43,15 +43,15 @@ describe "FeatureFlags" do
 
   describe '#city_state' do
     it 'returns false when feature is nil' do
-      expect(@feature_flags.city_state(feature: nil, city_id: 1)).to be false
+      expect(@feature_flags.city_state(feature: nil, city_id: 1)).to be_nil
     end
 
     it 'returns false when city_id is nil' do
-      expect(@feature_flags.city_state(feature: :cashless, city_id: nil)).to be false
+      expect(@feature_flags.city_state(feature: :cashless, city_id: nil)).to be_nil
     end
 
     it 'returns false for a feature that does not exist' do
-      expect(@feature_flags.city_state(feature: :not_exist, city_id: 1)).to be false
+      expect(@feature_flags.city_state(feature: :not_exist, city_id: 1)).to eq('inactive')
     end
 
     it 'returns "live" when feature is live in that city' do
