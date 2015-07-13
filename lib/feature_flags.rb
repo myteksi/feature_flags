@@ -54,23 +54,21 @@ class FeatureFlags
     features
   end
 
-  def activate_user(feature:, city_id:, id:)
-    if city_live?(feature: feature, city_id: city_id)
+  def activate_user(feature:, id:, live: false)
+    if live
       @redis.srem(blacklist_user_key(feature, id), id)
-    elsif city_beta?(feature: feature, city_id: city_id)
+      @redis.srem(whitelist_user_key(feature), id)
+    else
       @redis.sadd(whitelist_user_key(feature), id)
     end
   end
 
-  def deactivate_user(feature:, city_id:, id:)
-    if city_live?(feature: feature, city_id: city_id)
-      @redis.sadd(blacklist_user_key(feature, id), id)
-    elsif city_beta?(feature: feature, city_id: city_id)
-      @redis.srem(whitelist_user_key(feature), id)
-    end
+  def deactivate_user(feature:, id:)
+    @redis.sadd(blacklist_user_key(feature, id), id)
+    @redis.srem(whitelist_user_key(feature), id)
   end
 
-  def user_active?(feature:, city_id:, id:)
+  def user_active_in_city?(feature:, city_id:, id:)
     return false if feature.nil? || city_id.nil? || id.nil?
 
     if city_live?(feature: feature, city_id: city_id)
@@ -82,11 +80,24 @@ class FeatureFlags
     end
   end
 
+  def user_state(feature:, id:)
+    return nil if feature.nil? || id.nil?
+
+    # If both should return 'beta'.
+    if @redis.sismember(whitelist_user_key(feature), id)
+      return 'beta'
+    elsif !@redis.sismember(blacklist_user_key(feature, id), id)
+      return 'live'
+    else
+      return 'inactive'
+    end
+  end
+
   # Returns a hash as follows { cashless: 'live', beta: nil, something: 'beta' }
   def user_features(id:, city_id:, feature_list: [])
     features = {}
     feature_list.each do |feature|
-      if user_active?(feature: feature, city_id: city_id, id: id)
+      if user_active_in_city?(feature: feature, city_id: city_id, id: id)
         features[feature] = true
       else
         features[feature] = false
