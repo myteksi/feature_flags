@@ -60,6 +60,7 @@ class FeatureFlags
       @redis.srem(whitelist_user_key(feature), id)
     else
       @redis.sadd(whitelist_user_key(feature), id)
+      @redis.srem(blacklist_user_key(feature, id), id)
     end
   end
 

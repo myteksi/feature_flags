@@ -96,18 +96,27 @@ describe "FeatureFlags" do
     end
 
     it 'adds the user to the whitelist if setting the feature as beta for the user' do
-      @feature_flags.activate_user(feature: :cashless, id: 234_567, live: false)
+      @feature_flags.deactivate_user(feature: :cashless, id: 234_567)
+      expect(@redis.sismember('test_user_cashless_blacklist_2', 234_567)).to be true
+      expect(@redis.sismember('test_user_cashless_whitelist', 234_567)).to be false
 
+      @feature_flags.activate_user(feature: :cashless, id: 234_567, live: false)
       expect(@redis.sismember('test_user_cashless_blacklist_2', 234_567)).to be false
       expect(@redis.sismember('test_user_cashless_whitelist', 234_567)).to be true
     end
 
-    it 'removes the user from the blacklist if the feature is live for the city' do
+    it 'removes the user from the blacklist and whitelist if setting the feature as live for the user' do
       @feature_flags.deactivate_user(feature: :cashless, id: 345_678)
       expect(@redis.sismember('test_user_cashless_blacklist_3', 345_678)).to be true
 
       @feature_flags.activate_user(feature: :cashless, id: 345_678, live: true)
       expect(@redis.sismember('test_user_cashless_blacklist_3', 345_678)).to be false
+
+      @feature_flags.activate_user(feature: :cashless, id: 345_678, live: false)
+      expect(@redis.sismember('test_user_cashless_whitelist', 345_678)).to be true
+
+      @feature_flags.activate_user(feature: :cashless, id: 345_678, live: true)
+      expect(@redis.sismember('test_user_cashless_whitelist', 345_678)).to be false
     end
   end
 
