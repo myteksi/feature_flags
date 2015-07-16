@@ -107,12 +107,15 @@ describe "FeatureFlags" do
       expect(@redis.sismember('test_user_cashless_whitelist', 234_567)).to be true
     end
 
-    it 'does not do anything if city is off or feature not exist' do
+    it 'removes user from both lists if city is off or feature not exist' do
       @feature_flags.deactivate_city(feature: :cashless, city_id: 1)
 
-      @feature_flags.activate_user(feature: :cashless, city_id: 1, id: 345_678)
-      expect(@redis).not_to receive(:srem)
+      expect(@redis).to receive(:srem).exactly(:twice)
       expect(@redis).not_to receive(:sadd)
+
+      @feature_flags.activate_user(feature: :cashless, city_id: 1, id: 345_678)
+      expect(@redis.sismember('test_user_cashless_blacklist_1', 345_678)).to be false
+      expect(@redis.sismember('test_user_cashless_whitelist', 345_678)).to be false
     end
   end
 
