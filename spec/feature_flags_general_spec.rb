@@ -7,15 +7,15 @@ describe FeatureFlagsGeneral do
 
   describe '#change_global_feature' do
     it 'updates feature at redis sets' do
-      expect(redis).to receive(:srem).with('features/state_city_feature_beta', 9).once
-      expect(redis).to receive(:sadd).with('features/state_city_feature_live', 9).once
+      expect(redis).to receive(:srem).with('features_state_city_feature_beta', 9).once
+      expect(redis).to receive(:sadd).with('features_state_city_feature_live', 9).once
 
       subject.change_global_feature(:city, 9, :feature, :live)
     end
 
     it 'removes feature from redis sets' do
-      expect(redis).to receive(:srem).with('features/state_city_feature_beta', 9).once
-      expect(redis).to receive(:srem).with('features/state_city_feature_live', 9).once
+      expect(redis).to receive(:srem).with('features_state_city_feature_beta', 9).once
+      expect(redis).to receive(:srem).with('features_state_city_feature_live', 9).once
 
       subject.change_global_feature(:city, 9, :feature, nil)
     end
@@ -23,14 +23,14 @@ describe FeatureFlagsGeneral do
 
   describe '#global_feature' do
     it 'returns feature state :beta' do
-      expect(redis).to receive(:sismember).with('features/state_city_feature_beta', 9).and_return(true)
+      expect(redis).to receive(:sismember).with('features_state_city_feature_beta', 9).and_return(true)
 
       expect(subject.global_feature(:city, 9, :feature)).to be(:beta)
     end
 
     it 'return feature state nil' do
-      expect(redis).to receive(:sismember).with('features/state_city_feature_beta', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/state_city_feature_live', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_state_city_feature_beta', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_state_city_feature_live', 9).and_return(false)
 
       expect(subject.global_feature(:city, 9, :feature)).to be(nil)
     end
@@ -38,10 +38,10 @@ describe FeatureFlagsGeneral do
 
   describe '#global_features' do
     it 'returns feature states in hash' do
-      expect(redis).to receive(:sismember).with('features/state_city_featureA_beta', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/state_city_featureA_live', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/state_city_featureB_beta', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/state_city_featureB_live', 9).and_return(true)
+      expect(redis).to receive(:sismember).with('features_state_city_featureA_beta', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_state_city_featureA_live', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_state_city_featureB_beta', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_state_city_featureB_live', 9).and_return(true)
 
       expect(subject.global_features(:city, 9, [:featureA, :featureB])).to match({ featureA: nil, featureB: :live })
     end
@@ -49,15 +49,15 @@ describe FeatureFlagsGeneral do
 
   describe '#change_local_feature' do
     it 'updates feature at redis sets' do
-      expect(redis).to receive(:srem).with('features/list_user_feature_whitelist', 9).once
-      expect(redis).to receive(:sadd).with('features/list_user_feature_blacklist', 9).once
+      expect(redis).to receive(:srem).with('features_list_user_feature_whitelist', 9).once
+      expect(redis).to receive(:sadd).with('features_list_user_feature_blacklist', 9).once
 
       subject.change_local_feature(:user, 9, :feature, :blacklist)
     end
 
     it 'removes feature from redis sets' do
-      expect(redis).to receive(:srem).with('features/list_user_feature_whitelist', 9).once
-      expect(redis).to receive(:srem).with('features/list_user_feature_blacklist', 9).once
+      expect(redis).to receive(:srem).with('features_list_user_feature_whitelist', 9).once
+      expect(redis).to receive(:srem).with('features_list_user_feature_blacklist', 9).once
 
       subject.change_local_feature(:user, 9, :feature, nil)
     end
@@ -65,14 +65,14 @@ describe FeatureFlagsGeneral do
 
   describe '#local_feature' do
     it 'returns feature list :whitelist' do
-      expect(redis).to receive(:sismember).with('features/list_user_feature_whitelist', 9).and_return(true)
+      expect(redis).to receive(:sismember).with('features_list_user_feature_whitelist', 9).and_return(true)
 
       expect(subject.local_feature(:user, 9, :feature)).to be(:whitelist)
     end
 
     it 'return feature list nil' do
-      expect(redis).to receive(:sismember).with('features/list_user_feature_whitelist', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/list_user_feature_blacklist', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_list_user_feature_whitelist', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_list_user_feature_blacklist', 9).and_return(false)
 
       expect(subject.local_feature(:user, 9, :feature)).to be(nil)
     end
@@ -80,10 +80,10 @@ describe FeatureFlagsGeneral do
 
   describe '#local_features' do
     it 'returns feature lists in hash' do
-      expect(redis).to receive(:sismember).with('features/list_user_featureA_whitelist', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/list_user_featureA_blacklist', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/list_user_featureB_whitelist', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features/list_user_featureB_blacklist', 9).and_return(true)
+      expect(redis).to receive(:sismember).with('features_list_user_featureA_whitelist', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_list_user_featureA_blacklist', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_list_user_featureB_whitelist', 9).and_return(false)
+      expect(redis).to receive(:sismember).with('features_list_user_featureB_blacklist', 9).and_return(true)
 
       expect(subject.local_features(:user, 9, [:featureA, :featureB])).to match({ featureA: nil, featureB: :blacklist })
     end
@@ -106,8 +106,8 @@ describe FeatureFlagsGeneral do
 
     context 'beta + whitelist' do
       before do
-        allow(redis).to receive(:sismember).with('features/state_city_feature_beta', 1).and_return(true)
-        allow(redis).to receive(:sismember).with('features/list_user_feature_whitelist', 9).and_return(true)
+        allow(redis).to receive(:sismember).with('features_state_city_feature_beta', 1).and_return(true)
+        allow(redis).to receive(:sismember).with('features_list_user_feature_whitelist', 9).and_return(true)
       end
 
       it_behaves_like 'state_list_feature_on?', :beta, :whitelist, true
@@ -115,7 +115,7 @@ describe FeatureFlagsGeneral do
 
     context 'beta + nil' do
       before do
-        allow(redis).to receive(:sismember).with('features/state_city_feature_beta', 1).and_return(true)
+        allow(redis).to receive(:sismember).with('features_state_city_feature_beta', 1).and_return(true)
       end
 
       it_behaves_like 'state_list_feature_on?', :beta, nil, false
@@ -123,7 +123,7 @@ describe FeatureFlagsGeneral do
 
     context 'live + !blacklist' do
       before do
-        allow(redis).to receive(:sismember).with('features/state_city_feature_live', 1).and_return(true)
+        allow(redis).to receive(:sismember).with('features_state_city_feature_live', 1).and_return(true)
       end
 
       it_behaves_like 'state_list_feature_on?', :live, nil, true
@@ -131,8 +131,8 @@ describe FeatureFlagsGeneral do
 
     context 'live + blacklist' do
       before do
-        allow(redis).to receive(:sismember).with('features/state_city_feature_live', 1).and_return(true)
-        allow(redis).to receive(:sismember).with('features/list_user_feature_blacklist', 9).and_return(true)
+        allow(redis).to receive(:sismember).with('features_state_city_feature_live', 1).and_return(true)
+        allow(redis).to receive(:sismember).with('features_list_user_feature_blacklist', 9).and_return(true)
       end
 
       it_behaves_like 'state_list_feature_on?', :live, :blacklist, false
@@ -174,8 +174,8 @@ describe FeatureFlagsGeneral do
     end
 
     it 'returns feature? true' do
-      allow(redis).to receive(:sismember).with('flags/city_feature_sa', 1).and_return(true)
-      allow(redis).to receive(:sismember).with('flags/user_feature_la_4', 9).and_return(true)
+      allow(redis).to receive(:sismember).with('flags_city_feature_sa', 1).and_return(true)
+      allow(redis).to receive(:sismember).with('flags_user_feature_la_4', 9).and_return(true)
 
       expect(subject.feature?(:city, 1, :user, 9, :feature)).to be(true)
     end

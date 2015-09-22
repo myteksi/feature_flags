@@ -110,7 +110,7 @@ module FeatureFlagsGeneral
 
     def namespaced_key(*parts)
       key = @rule.key_generator ? @rule.key_generator.call(*parts) : parts[0..-2].join('_'.freeze)
-      @namespace ? "#{@namespace}/#{key}" : key
+      @namespace ? "#{@namespace}_#{key}" : key
     end
 
     def default_rule
