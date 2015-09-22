@@ -1,6 +1,8 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
 require 'feature_flags'
+require 'feature_flags_general'
 require 'rspec'
 require 'bourne'
 require 'redis'
