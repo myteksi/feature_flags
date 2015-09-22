@@ -1,17 +1,7 @@
 class FeatureFlags
   def initialize(redis, namespace, group_size = 100_000)
-    @feature_flags = FeatureFlagsGeneral::FlagStorage.new(redis, namespace: 'flags') do |rule|
-      rule.states = %i(beta live)
-      rule.lists = %i(whitelist blacklist)
-
-      rule.feature_checker = ->(state, list) do
-        return true if :live == state && :blacklist != list
-        return true if :beta == state && :whitelist == list
-
-        false
-      end
-
-      rule.key_generator = ->(type, feature_key, feature, state, feature_val) do
+    @feature_flags = FeatureFlagsGeneral::FlagStorage.new(redis, namespace: namespace) do |rule|
+      rule.key_generator = ->(type, feature, state, feature_key, feature_val) do
         parts = [feature_key, feature, state]
         parts << feature_val % group_size if state == :la
         parts.join('_'.freeze)
@@ -28,53 +18,31 @@ class FeatureFlags
     return if city_id.nil? || feature.nil?
 
     @feature_flags.set_global_feature(:city, city_id, feature.to_sym, live ? :live : :beta)
-
-#     if live
-#       @redis.sadd(live_features_key(feature), city_id)
-#       @redis.srem(beta_features_key(feature), city_id)
-#     else
-#       @redis.sadd(beta_features_key(feature), city_id)
-#       @redis.srem(live_features_key(feature), city_id)
-#     end
   end
 
   # Neither live / beta
   def deactivate_city(feature:, city_id:)
     return if feature.nil? || city_id.nil?
 
-    @redis.srem(live_features_key(feature), city_id)
-    @redis.srem(beta_features_key(feature), city_id)
+    @feature_flags.set_global_feature(:city, city_id, feature.to_sym, nil)
   end
 
   def city_state(feature:, city_id:)
     return nil if feature.nil? || city_id.nil?
 
-    if city_live?(feature: feature, city_id: city_id)
-      'live'
-    elsif city_beta?(feature: feature, city_id: city_id)
-      'beta'
-    else
-      'inactive'
-    end
+    @feature_flags.global_feature(:city, city_id, feature.to_sym).to_s
   end
 
   # Returns a hash as follows { cashless: 'live', beta: nil, something: 'beta' }
   def city_features(city_id: , feature_list: [])
-    features = {}
-    feature_list.each do |feature|
-      if city_live?(feature: feature, city_id: city_id)
-        features[feature] = 'live'
-      elsif city_beta?(feature: feature, city_id: city_id)
-        features[feature] = 'beta'
-      else
-        features[feature] = nil
-      end
-    end
-
-    features
+    @feature_flags.global_features(:city, city_id, feature_list.map(&:to_sym))
   end
 
+  # deprecated, should be whitelist_user, blacklist_user
   def activate_user(feature:, city_id:, id:)
+    # @feature_flags.set_local_feature(:user, id, feature.to_sym, :whitelist)
+    # @feature_flags.set_local_feature(:user, id, feature.to_sym, :blacklist)
+
     if city_beta?(feature: feature, city_id: city_id)
       @redis.sadd(whitelist_user_key(feature), id)
       @redis.srem(blacklist_user_key(feature, id), id)
@@ -84,7 +52,10 @@ class FeatureFlags
     end
   end
 
+  # deprecated, should remove user from all lists
   def deactivate_user(feature:, id:)
+    # @feature_flags.set_local_feature(:user, id, feature.to_sym, nil)
+
     @redis.sadd(blacklist_user_key(feature, id), id)
     @redis.srem(whitelist_user_key(feature), id)
   end
@@ -92,40 +63,17 @@ class FeatureFlags
   def user_active_in_city?(feature:, city_id:, id:)
     return false if feature.nil? || city_id.nil? || id.nil?
 
-    if city_live?(feature: feature, city_id: city_id)
-      !@redis.sismember(blacklist_user_key(feature, id), id)
-    elsif city_beta?(feature: feature, city_id: city_id)
-      @redis.sismember(whitelist_user_key(feature), id)
-    else
-      false
-    end
+    @feature_flags.feature?(:city, city_id, :user, id, feature.to_sym)
   end
 
+  # return of :whitelist, :blacklist, nil
   def user_state(feature:, id:)
-    return nil if feature.nil? || id.nil?
-
-    # If both should return 'beta'.
-    if @redis.sismember(whitelist_user_key(feature), id)
-      return 'beta'
-    elsif !@redis.sismember(blacklist_user_key(feature, id), id)
-      return 'live'
-    else
-      return 'inactive'
-    end
+    @feature_flags.local_feature(:user, id, feature.to_sym).to_s
   end
 
   # Returns a hash as follows { cashless: 'live', beta: nil, something: 'beta' }
   def user_features(id:, city_id:, feature_list: [])
-    features = {}
-    feature_list.each do |feature|
-      if user_active_in_city?(feature: feature, city_id: city_id, id: id)
-        features[feature] = true
-      else
-        features[feature] = false
-      end
-    end
-
-    features
+    @feature_flags.local_features(:user, id, feature_list.map(&:to_sym))
   end
 
   private
