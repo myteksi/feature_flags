@@ -5,19 +5,19 @@ describe FeatureFlagsGeneral do
 
   subject { FeatureFlagsGeneral::FlagStorage.new(redis) }
 
-  describe '#change_global_feature' do
+  describe '#set_global_feature' do
     it 'updates feature at redis sets' do
       expect(redis).to receive(:srem).with('features_state_city_feature_beta', 9).once
       expect(redis).to receive(:sadd).with('features_state_city_feature_live', 9).once
 
-      subject.change_global_feature(:city, 9, :feature, :live)
+      subject.set_global_feature(:city, 9, :feature, :live)
     end
 
     it 'removes feature from redis sets' do
       expect(redis).to receive(:srem).with('features_state_city_feature_beta', 9).once
       expect(redis).to receive(:srem).with('features_state_city_feature_live', 9).once
 
-      subject.change_global_feature(:city, 9, :feature, nil)
+      subject.set_global_feature(:city, 9, :feature, nil)
     end
   end
 
@@ -47,19 +47,19 @@ describe FeatureFlagsGeneral do
     end
   end
 
-  describe '#change_local_feature' do
+  describe '#set_local_feature' do
     it 'updates feature at redis sets' do
       expect(redis).to receive(:srem).with('features_list_user_feature_whitelist', 9).once
       expect(redis).to receive(:sadd).with('features_list_user_feature_blacklist', 9).once
 
-      subject.change_local_feature(:user, 9, :feature, :blacklist)
+      subject.set_local_feature(:user, 9, :feature, :blacklist)
     end
 
     it 'removes feature from redis sets' do
       expect(redis).to receive(:srem).with('features_list_user_feature_whitelist', 9).once
       expect(redis).to receive(:srem).with('features_list_user_feature_blacklist', 9).once
 
-      subject.change_local_feature(:user, 9, :feature, nil)
+      subject.set_local_feature(:user, 9, :feature, nil)
     end
   end
 

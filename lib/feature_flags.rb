@@ -1,5 +1,23 @@
 class FeatureFlags
   def initialize(redis, namespace, group_size = 100_000)
+    @feature_flags = FeatureFlagsGeneral::FlagStorage.new(redis, namespace: 'flags') do |rule|
+      rule.states = %i(beta live)
+      rule.lists = %i(whitelist blacklist)
+
+      rule.feature_checker = ->(state, list) do
+        return true if :live == state && :blacklist != list
+        return true if :beta == state && :whitelist == list
+
+        false
+      end
+
+      rule.key_generator = ->(type, feature_key, feature, state, feature_val) do
+        parts = [feature_key, feature, state]
+        parts << feature_val % group_size if state == :la
+        parts.join('_'.freeze)
+      end
+    end
+
     @redis = redis
     @namespace = namespace
     @group_size = group_size
@@ -9,13 +27,15 @@ class FeatureFlags
   def activate_city(feature:, city_id:, live: false)
     return if city_id.nil? || feature.nil?
 
-    if live
-      @redis.sadd(live_features_key(feature), city_id)
-      @redis.srem(beta_features_key(feature), city_id)
-    else
-      @redis.sadd(beta_features_key(feature), city_id)
-      @redis.srem(live_features_key(feature), city_id)
-    end
+    @feature_flags.set_global_feature(:city, city_id, feature.to_sym, live ? :live : :beta)
+
+#     if live
+#       @redis.sadd(live_features_key(feature), city_id)
+#       @redis.srem(beta_features_key(feature), city_id)
+#     else
+#       @redis.sadd(beta_features_key(feature), city_id)
+#       @redis.srem(live_features_key(feature), city_id)
+#     end
   end
 
   # Neither live / beta

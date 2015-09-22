@@ -25,9 +25,9 @@ module FeatureFlagsGeneral
       end
     end
 
-    # e.g. change_global_feature(:city, city_id, :feature, :live)
+    # e.g. set_global_feature(:city, city_id, :feature, :live)
     # => 'OK'
-    def change_global_feature(key, value, feature, to_state)
+    def set_global_feature(key, value, feature, to_state)
       @rule.states.each do |state|
         namespaced_key = namespaced_key(STATE, key, feature, state, value)
         if state == to_state
@@ -57,9 +57,9 @@ module FeatureFlagsGeneral
       end
     end
 
-    # e.g. change_local_feature(:user, user_id, :feature, :whitelist)
+    # e.g. set_local_feature(:user, user_id, :feature, :whitelist)
     # => 'OK'
-    def change_local_feature(key, value, feature, to_list)
+    def set_local_feature(key, value, feature, to_list)
       @rule.lists.each do |list|
         namespaced_key = namespaced_key(LIST, key, feature, list, value)
         if list == to_list
