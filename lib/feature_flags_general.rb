@@ -15,21 +15,18 @@ module FeatureFlagsGeneral
 
     def initialize(redis, options = {})
       @redis = redis
-      @namespace = options.fetch(:namespace) { 'features' }
-      @rule = FlagRule.new
 
-      if block_given?
-        yield(@rule)
-      else
-        default_rule
-      end
+      @namespace = options.fetch(:namespace) { 'features' }
+      @rule = options.fetch(:flag_rule) { default_rule(FlagRule.new) }
+
+      yield(@rule) if block_given?
     end
 
     # e.g. set_global_feature(:city, city_id, :feature, :live)
     # => 'OK'
     def set_global_feature(key, value, feature, to_state)
       @rule.states.each do |state|
-        namespaced_key = namespaced_key(STATE, key, feature, state, value)
+        namespaced_key = namespaced_key(STATE, feature, state, key, value)
         if state == to_state
           @redis.sadd(namespaced_key, value)
         else
@@ -42,7 +39,7 @@ module FeatureFlagsGeneral
     # => :live
     def global_feature(key, value, feature)
       @rule.states.each do |state|
-        namespaced_key = namespaced_key(STATE, key, feature, state, value)
+        namespaced_key = namespaced_key(STATE, feature, state, key, value)
         return state if @redis.sismember(namespaced_key, value)
       end
 
@@ -61,7 +58,7 @@ module FeatureFlagsGeneral
     # => 'OK'
     def set_local_feature(key, value, feature, to_list)
       @rule.lists.each do |list|
-        namespaced_key = namespaced_key(LIST, key, feature, list, value)
+        namespaced_key = namespaced_key(LIST, feature, list, key, value)
         if list == to_list
           @redis.sadd(namespaced_key, value)
         else
@@ -74,7 +71,7 @@ module FeatureFlagsGeneral
     # => :whitelist
     def local_feature(key, value, feature)
       @rule.lists.each do |list|
-        namespaced_key = namespaced_key(LIST, key, feature, list, value)
+        namespaced_key = namespaced_key(LIST, feature, list, key, value)
         return list if @redis.sismember(namespaced_key, value)
       end
 
@@ -113,16 +110,18 @@ module FeatureFlagsGeneral
       @namespace ? "#{@namespace}_#{key}" : key
     end
 
-    def default_rule
-      @rule.states = %i(beta live)
-      @rule.lists = %i(whitelist blacklist)
+    def default_rule(rule)
+      rule.states = %i(beta live)
+      rule.lists = %i(whitelist blacklist)
 
-      @rule.feature_checker = ->(state, list) do
+      rule.feature_checker = ->(state, list) do
         return true if :live == state && :blacklist != list
         return true if :beta == state && :whitelist == list
 
         false
       end
+
+      rule
     end
   end
 end
