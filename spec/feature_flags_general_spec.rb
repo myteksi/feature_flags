@@ -3,7 +3,7 @@ require 'spec_helper'
 describe FeatureFlagsGeneral do
   let(:redis) { double() }
 
-  subject { FeatureFlagsGeneral::FlagStorage.new(redis) }
+  subject { FeatureFlagsGeneral::FlagStorage.new(redis, namespace: 'features') }
 
   describe '#set_global_feature' do
     it 'updates feature at redis sets' do
@@ -24,6 +24,7 @@ describe FeatureFlagsGeneral do
   describe '#global_feature' do
     it 'returns feature state :beta' do
       expect(redis).to receive(:sismember).with('features_state_feature_beta_city', 9).and_return(true)
+      expect(redis).to receive(:sismember).with('features_state_feature_live_city', 9).and_return(false)
 
       expect(subject.global_feature(:city, 9, :feature)).to be(:beta)
     end
@@ -40,7 +41,6 @@ describe FeatureFlagsGeneral do
     it 'returns feature states in hash' do
       expect(redis).to receive(:sismember).with('features_state_featureA_beta_city', 9).and_return(false)
       expect(redis).to receive(:sismember).with('features_state_featureA_live_city', 9).and_return(false)
-      expect(redis).to receive(:sismember).with('features_state_featureB_beta_city', 9).and_return(false)
       expect(redis).to receive(:sismember).with('features_state_featureB_live_city', 9).and_return(true)
 
       expect(subject.global_features(:city, 9, [:featureA, :featureB])).to match({ featureA: nil, featureB: :live })

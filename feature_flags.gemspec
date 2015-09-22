@@ -3,13 +3,13 @@ $:.push File.expand_path("../lib", __FILE__)
 require "feature_flags/version"
 
 Gem::Specification.new do |s|
-  s.name = "feature_flags"
-  s.version = FeatureFlags::VERSION
-  s.authors = ["Althaf Hameez"]
+  s.name        = "feature_flags"
+  s.version     = FeatureFlags::VERSION
+  s.authors     = ["Althaf Hameez"]
   s.email       = ["althaf.hameez@grabtaxi.com"]
   s.description = "Feature Flags using redis"
-  s.summary = "Feature flags using redis"
-  s.homepage = "https://github.com/myteksi/feature_flags"
+  s.summary     = "Feature flags using redis"
+  s.homepage    = "https://github.com/myteksi/feature_flags"
 
   s.require_paths = ["lib"]
 

@@ -1,14 +1,6 @@
-module FeatureFlagsGeneral
-  class FlagRule
-    # states, lists are arrays of acceptable values
-    attr_accessor :states, :lists
-    # feature_checker is a Proc/Lambda/Class that respond_to `call(state, list)`
-    # it should return true if the combination is feature activated
-    attr_accessor :feature_checker
-    # key_generator is a Proc/Lambda/Class that respond_to `call(state, list)`
-    attr_accessor :key_generator
-  end
+require 'feature_flags/flag_rule'
 
+module FeatureFlagsGeneral
   class FlagStorage
     STATE = 'state'.freeze
     LIST = 'list'.freeze
@@ -16,7 +8,7 @@ module FeatureFlagsGeneral
     def initialize(redis, options = {})
       @redis = redis
 
-      @namespace = options.fetch(:namespace) { 'features' }
+      @namespace = options.fetch(:namespace) { nil }
       @rule = options.fetch(:flag_rule) { default_rule(FlagRule.new) }
 
       yield(@rule) if block_given?
@@ -89,6 +81,8 @@ module FeatureFlagsGeneral
     # e.g. feature?(:city, city_id, :user, user_id, :feature)
     # => true
     def feature?(global_key, global_val, local_key, local_val, feature)
+      return false if global_val.nil?
+
       state = global_feature(global_key, global_val, feature)
       list = local_feature(local_key, local_val, feature)
 
@@ -111,7 +105,7 @@ module FeatureFlagsGeneral
     end
 
     def default_rule(rule)
-      rule.states = %i(beta live)
+      rule.states = %i(live beta)
       rule.lists = %i(whitelist blacklist)
 
       rule.feature_checker = ->(state, list) do
