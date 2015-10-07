@@ -127,7 +127,7 @@ class FeatureFlags
   end
 
   def blacklist_user_key(feature, id)
-    "#{@namespace}_user_#{feature}_blacklist_#{id / @group_size}"
+    "#{@namespace}_user_#{feature}_blacklist_#{id % @group_size}"
   end
 
   def whitelist_user_key(feature)
